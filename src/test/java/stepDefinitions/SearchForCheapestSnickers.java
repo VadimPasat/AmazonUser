@@ -1,13 +1,17 @@
 package stepDefinitions;
 
 import context.ScenarioContext;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import page.AddCheapestSnickersToCart;;import java.util.List;
+import page.AddCheapestSnickersToCart;
+import page.components.Product;;import java.math.BigDecimal;
+
+import static org.junit.Assert.assertEquals;
 
 @Getter
 @Log4j
@@ -21,23 +25,42 @@ public class SearchForCheapestSnickers {
     @When("{} are inserted in search bar")
     public void snickersAreInsertedInSearchBar(String item) throws InterruptedException {
         addCheapestSnickersToCart.searchForTheCheapestItems(item);
-        Thread.sleep(1000);
     }
 
-    @When("Result is displayed")
+    @Then("Result is displayed")
     public void ResultIsDisplayed() throws InterruptedException {
-        // assertEquals(addCheapestSnickersToCart.getAssertPostSearchAction().getAttribute("value"), "Snickers");
-        System.out.println("All good");
+        assertEquals("Results", addCheapestSnickersToCart.getSearchResultsTitle().getText().substring(0, 7));
+        log.info("Results are displayed");
     }
 
-    @Then("Sort the price by low to high")
+    @And("Sort the price by low to high")
     public void sortThePriceLowToHigh() throws InterruptedException {
         addCheapestSnickersToCart.sortTheProductByLowToHigh();
     }
 
+    @And("Add the cheapest available {} to the basket")
+    public void iAddTheCheapestAvailableItemToTheBasket(String item) throws InterruptedException {
+        addCheapestSnickersToCart.addTheCheapestAvailableItemToTheBasket();
+    }
 
-    @Then("Add the cheapest available {} to the basket")
-    public void iAddTheCheapestAvailableItemToTheBasket(String item) {
-        addCheapestSnickersToCart.addTheCheapestAvailableItemToTheBasket(item);
+    @And("Validate if the basket calculates the result correctly")
+    public void checkIfBasketCalculatesTheResultsCorrectly() throws InterruptedException {
+        addCheapestSnickersToCart.checkIfBasketCalculatesTheResultsCorrectly();
+    }
+
+    @And("Access the Amazon basket")
+    public void accessTheAmazonBasket() throws InterruptedException {
+        addCheapestSnickersToCart.clickOnTheBasket();
+    }
+
+    @And("Press to checkout button")
+    public void pressOnCheckoutButton() throws InterruptedException {
+        addCheapestSnickersToCart.clickOnCheckoutButton();
+    }
+
+
+    @And("Validate if the user gets redirected to the registration page")
+    public void validateIfUserGetsRedirectedToTheRegistrationPage() throws InterruptedException {
+        addCheapestSnickersToCart.singInForm();
     }
 }

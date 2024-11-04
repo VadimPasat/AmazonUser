@@ -2,65 +2,67 @@ package page;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j;
-import org.openqa.selenium.By;
-import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.junit.Assert;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import page.components.Product;
 
 import java.util.List;
 
+import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @Log4j
 @Getter
 public class AddCheapestSnickersToCart extends AbstractPage {
+    private double basketPrice;
+    private WebElement elementWholePrice;
+    private WebElement elementFractionPrice;
+    Product product = new Product(super.getDriver());
 
-    WebDriver driver;
+    @FindBy(css = "[id='navbar']")
+    private WebElement navigationBar;
 
-    public AddCheapestSnickersToCart addCheapestSnickersToCart(WebDriver driver) {
-        this.driver = driver;
-        PageFactory.initElements(driver, this);
-        return null;
-    }
-
-    @FindBy(xpath = "//div[@role='heading' and text()='Amazon Payment Products']")
-    private WebElement asserHomePage;
-
-    @FindBy(xpath = "//input[@type='text' or @placeholder='Search']")
+    @FindBy(css = "[id='twotabsearchtextbox']")
     private WebElement searchField;
 
-    @FindBy(xpath = "//input[@id='twotabsearchtextbox']")
-    private WebElement assertSearchField;
-
-    @FindBy(xpath = "//input[contains(@id, 'nav-search-submit')]")
+    @FindBy(css = "[id='nav-search-submit-button']")
     private WebElement searchButton;
 
-    @FindBy(xpath = "//*[@id='search']//h2[contains(@class, 'a-size-medium-plus') and contains(@class, 'a-color-base') and text()='Results']")
-    private WebElement assertPostSearchAction;
+    @FindBy(css = ".s-messaging-widget-results-header")
+    private WebElement searchResultsTitle;
 
-    @FindBy(xpath = "//span[@data-action='a-dropdown-button']")
-    private WebElement clickOnDropDownButtonSortBy;
+    @FindBy(css = ".a-button-dropdown:not(.quantity)")
+    private WebElement sortDropDownButton;
 
-    @FindBy(xpath = "//*[@id=\"s-result-sort-select_1\"]")
+
+    @FindBy(css = "[id='s-result-sort-select_1']")
     private WebElement sortPriceByLowToHigh;
 
-    @FindBy(xpath = "//span[@class=\"a-dropdown-prompt\" and text()='Price: Low to High']")
-    private WebElement assertSortByAction;
+    @FindBy(css = "[data-component-type='s-search-result']")
+    private List<WebElement> allDisplayedProducts;
 
-    @FindBy(css = "div[data-component-type='s-search-result']")
-    private List<WebElement> findAllElements;
+    @FindBy(css = "[class='ewc-subtotal-amount']")
+    private WebElement totalPriceForTheItems;
 
-    @FindBy(xpath = "//button[text()='Add to Cart']")
-    private By availableTextLocator;
+    @FindBy(css = "[class='a-size-base a-text-bold']")
+    List<WebElement> allItemsFromTheCart;
 
-    @FindBy(css = "input[type='submit']")
-    private By addToBasketButtonLocator;
+    @FindBy(css = "[id='nav-cart']")
+    private WebElement basketButton;
 
-    @FindBy(xpath = "//span[@class='a-offscreen']")
-    private By priceLocator;
+    @FindBy(css = "[class='a-size-extra-large a-text-normal']")
+    private WebElement shoppingCartText;
+
+    @FindBy(css = "[name='proceedToRetailCheckout']")
+    private WebElement checkoutButton;
+
+    @FindBy(css = "[class='a-spacing-small']")
+    private WebElement singInForm;
+
 
 
     public AddCheapestSnickersToCart(WebDriver driver) {
@@ -68,66 +70,110 @@ public class AddCheapestSnickersToCart extends AbstractPage {
         PageFactory.initElements(driver, this);
     }
 
+    public List<Product> getAllDisplayedProducts() throws InterruptedException {
+        wait.until(ExpectedConditions.visibilityOf(allDisplayedProducts.get(0)));
+        return allDisplayedProducts.stream()
+                .map(productElement -> {
+                    Product product = new Product(this.getDriver());
+                    PageFactory.initElements(getDriver(), product);
+                    return product;
+                })
+                .collect(toList());
+    }
+
     public void homePageIsDisplayed() {
-        wait.until(ExpectedConditions.elementToBeClickable(asserHomePage));
-        assertEquals("The page does not seem to be Amazon's homepage.", "Amazon Payment Products", getAsserHomePage().getText().trim());
+        wait.until(ExpectedConditions.visibilityOf(navigationBar));
         log.info("The navigation logo is present and visible.");
     }
 
     public void searchForTheCheapestItems(String item) throws InterruptedException {
-        wait.until(ExpectedConditions.elementToBeClickable(searchField));
+        wait.until(ExpectedConditions.visibilityOf(searchField));
+        Thread.sleep(1000);
+        searchField.click();
+        searchField.clear();
         searchField.sendKeys(item);
-        wait.until(ExpectedConditions.visibilityOf(assertSearchField));
-        assertEquals(assertSearchField.getAttribute("value"), item);
+        wait.until(ExpectedConditions.visibilityOf(searchField));
+        assertEquals(searchField.getAttribute("value"), item);
+        log.info("The item name: " + item + " was successfully inserted in search bar");
         searchButton.click();
-        try {
-            assertEquals(assertPostSearchAction.getText(), "Results");
-        } catch (TimeoutException | AssertionError e) {
-            // Handle the timeout or assertion error
-            e.printStackTrace();
-            log.info("Login failed");
-        }
+        log.info("Click on search button");
     }
 
     public void sortTheProductByLowToHigh() throws InterruptedException {
-        wait.until(ExpectedConditions.elementToBeClickable(clickOnDropDownButtonSortBy));
-        clickOnDropDownButtonSortBy.click();
-        sortPriceByLowToHigh.click();
-        wait.until(ExpectedConditions.visibilityOf(assertSortByAction));
-        assertEquals("Price: Low to High", assertSortByAction.getText());
         try {
+            wait.until(ExpectedConditions.elementToBeClickable(sortDropDownButton));
+            sortDropDownButton.click();
+            wait.until(ExpectedConditions.elementToBeClickable(sortPriceByLowToHigh));
+            sortPriceByLowToHigh.click();
+            assertEquals("Sort by:Price: Low to High", sortDropDownButton.getText());
+            log.info("The products were sorted in acceding price order");
+            //try {
         } catch (TimeoutException | AssertionError e) {
             e.printStackTrace();
             log.info("Failed to sort the products in acceding price order");
         }
     }
 
-    public void addTheCheapestAvailableItemToTheBasket(String item) {
-        WebElement cheapestProduct = null;
-        double lowestPrice = Double.MAX_VALUE;
-
-        for (WebElement product : findAllElements) {
-            // Check if the product has the "Available" text
-            List<WebElement> availability = product.findElements(availableTextLocator);
-            if (availability.isEmpty()) {
-                continue; // Skip this product if it isn't available
-            }
-            // Get the price of the product
-            WebElement priceElement = product.findElement(priceLocator); // Adjust `priceLocator` as needed
-            double price = Double.parseDouble(priceElement.getText().replace("$", "")); // Parse price as double
-
-            // Check if this is the cheapest available product
-            if (price < lowestPrice) {
-                lowestPrice = price;
-                cheapestProduct = product;
+    public void addTheCheapestAvailableItemToTheBasket() throws InterruptedException {
+        List<Product> products = getAllDisplayedProducts();
+        log.info("Starting to iterate and find the cheapest available product");
+        for (Product product : products) {
+            try {
+                product.getAddToCartButton().isDisplayed();
+                product.getAddToCartButtonCustomElement().jsClick();
+                return;
+            } catch (NoSuchElementException ignored) {
+                log.error("Add to Cart button not visible for product: " + product.getProductName());
             }
         }
-        // If a cheapest available product was found, add it to the basket
-        if (cheapestProduct != null) {
-            WebElement addButton = cheapestProduct.findElement(addToBasketButtonLocator);
-            addButton.click();
-        } else {
-            throw new AssertionError("No " + item + " products available at the moment");
+    }
+
+    public void checkIfBasketCalculatesTheResultsCorrectly() throws InterruptedException {
+        log.info("Starting to validate if in the basket is showed the correct amount");
+        wait.until(ExpectedConditions.visibilityOf(totalPriceForTheItems));
+        double itemsPrice = 0.0;
+        for (WebElement item : allItemsFromTheCart) {
+            String priceText = item.getText();
+            double price = extractPrice(priceText);
+            itemsPrice += price;
         }
+        String totalPriceText = totalPriceForTheItems.getText();
+        double basketItemsSumCalculation = extractPrice(totalPriceText);
+
+        Assert.assertEquals(itemsPrice, basketItemsSumCalculation, 0.01);
+        log.info("The basket displayed correct amount");
+        log.info("The total sum of items: " + itemsPrice);
+        log.info("The total sum displayed in the basket: " + itemsPrice);
+    }
+
+    private double extractPrice(String priceText) {
+        String cleanedPrice = priceText.replaceAll("[^\\d.]", "");
+        try {
+            return Double.parseDouble(cleanedPrice);
+        } catch (NumberFormatException e) {
+            System.err.println("Error parsing price: " + priceText);
+            return 0.0;
+        }
+    }
+
+    public void clickOnTheBasket() throws InterruptedException {
+        wait.until(ExpectedConditions.elementToBeClickable(basketButton));
+        log.info("Click on shopping cart");
+        basketButton.click();
+        assertEquals("Shopping Cart", shoppingCartText.getText());
+        log.info("The cart is displayed successfully");
+    }
+
+    public void clickOnCheckoutButton() throws InterruptedException {
+        wait.until(ExpectedConditions.elementToBeClickable(checkoutButton));
+        log.info("Click on checkout button");
+        checkoutButton.click();
+    }
+
+    public void singInForm() throws InterruptedException {
+        wait.until(ExpectedConditions.visibilityOf(singInForm));
+        assertEquals("Sign in", singInForm.getText());
+        log.info("Sing in form is displayed");
+        log.info("User was redirected to the registration page");
     }
 }

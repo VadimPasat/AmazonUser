@@ -6,10 +6,8 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j;
-import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import page.AddCheapestSnickersToCart;
-import page.components.Product;;import java.math.BigDecimal;
 
 import static org.junit.Assert.assertEquals;
 

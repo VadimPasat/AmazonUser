@@ -64,9 +64,6 @@ public class DriverFactory {
                     case FIREFOX:
                         log.info("Setting up FirefoxDriver for Mac");
                         windowsFirefoxOptions.addArguments("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36");
-//                        WebDriverManager.firefoxdriver().driverVersion("0.32.0").mac().setup();
-//                        FirefoxOptions options = new FirefoxOptions();
-//                        options.addArguments("-safe-mode");
                         WebDriverManager.firefoxdriver().mac().setup();
                         driver = new FirefoxDriver(windowsFirefoxOptions);
                         break;

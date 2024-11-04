@@ -13,7 +13,6 @@ import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 @Log4j
 @Getter
@@ -62,7 +61,6 @@ public class AddCheapestSnickersToCart extends AbstractPage {
 
     @FindBy(css = "[class='a-spacing-small']")
     private WebElement singInForm;
-
 
 
     public AddCheapestSnickersToCart(WebDriver driver) {
